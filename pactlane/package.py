@@ -11,7 +11,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = '0.1.0.1501'
-VERSION_NAME = VERSION + '-pactlane.1'
+VERSION_NAME = VERSION + '-pactlane.2'
 UPSTREAM_COMMIT = '68bbd380d6e1a89d79748e5294661c752f5d1205'
 DESCRIPTION = 'Create TLSNotary proofs for Pactlane testing.'
 ORIGINAL_SHA256 = '1c312ad4305653b8d9351cf3eac46de4222a43be513260bf53053cfa1de45155'
@@ -69,8 +69,25 @@ def prepare(archive, output):
     manifest['description'] = DESCRIPTION
     manifest['version_name'] = VERSION_NAME
     files['manifest.json'] = (json.dumps(manifest, indent=2) + '\n').encode('utf-8')
-    changed = {name for name in files if files[name] != before[name]}
-    if changed != {WORKER, 'manifest.json'}:
+    # Presentation assets only. All executable bundles beyond the existing worker stay byte-identical.
+    files['content.styles.css'] = (ROOT / 'packages/extension/src/entries/Content/content.styles.css').read_bytes()
+    for name, title in [('confirmPopup.html', 'Pactlane TLSNotary · Review request'), ('options.html', 'Pactlane TLSNotary · Settings')]:
+        import re
+        html = files[name].decode('utf-8')
+        if len(re.findall(r'<title>.*?</title>', html)) != 1 or html.count('</head>') != 1:
+            raise SystemExit('Pinned page layout changed; no extension prepared.')
+        html = re.sub(r'<title>.*?</title>', '<title>' + title + '</title>', html)
+        html = html.replace('</head>', '<link rel="stylesheet" href="pactlane.css" /></head>')
+        files[name] = html.encode('utf-8')
+    for name in ['icon-128.png', 'icon-34.png']:
+        files[name] = (ROOT / 'packages/extension/src/assets/img' / name).read_bytes()
+    for name in ['pactlane.css', 'manrope.woff2', 'OFL.pactlane.txt', 'pactlane-mark.svg']:
+        if name in files:
+            raise SystemExit('Unexpected presentation asset collision.')
+        files[name] = (ROOT / 'pactlane/branding' / name).read_bytes()
+    changed = {name for name in before if files[name] != before[name]}
+    added = set(files) - set(before)
+    if changed != {WORKER, 'manifest.json', 'content.styles.css', 'confirmPopup.html', 'options.html', 'icon-128.png', 'icon-34.png'} or added != {'pactlane.css', 'manrope.woff2', 'OFL.pactlane.txt', 'pactlane-mark.svg'}:
         raise SystemExit('Unexpected modified-file set; no extension prepared.')
     if any(old_manifest.get(key) != manifest.get(key)
            for key in set(old_manifest) | set(manifest) if key not in {'name', 'version_name', 'description'}):
@@ -83,19 +100,23 @@ def prepare(archive, output):
         'upstreamRepository': 'https://github.com/tlsnotary/tlsn-extension',
         'upstreamCommit': UPSTREAM_COMMIT,
         'forkRepository': 'https://github.com/vmichalik/pactlane-tlsnotary',
-        'packagingMethod': 'Checksum-verified upstream ZIP with the documented worker and manifest edits',
+        'packagingMethod': 'Checksum-verified upstream ZIP with the documented worker, manifest and presentation edits',
         'setupAndCryptographyTestedLive': False,
         'setupTimeoutMs': 60000,
         'changesApplyTo': ['direct MPC setup', 'relay setup'],
         'cryptographicRuntimeChanged': False,
         'permissionsChanged': False,
         'modifiedFiles': [],
+        'addedFiles': [],
+        'presentationOnlySincePactlane1': True,
         'unchangedFiles': [],
         'packageFile': PACKAGE,
     }
     for name in sorted(files):
         record = {'path': name, 'sha256': digest(files[name])}
-        if name in changed:
+        if name in added:
+            audit['addedFiles'].append(record)
+        elif name in changed:
             record['originalSha256'] = digest(before[name])
             audit['modifiedFiles'].append(record)
         else:
@@ -104,6 +125,8 @@ def prepare(archive, output):
     source_paths = ['packages/extension/src/offscreen/ProveManager/worker.ts',
                     'packages/extension/src/manifest.json', 'pactlane/package.py',
                     'pactlane/INSTALL.md', 'pactlane/watchdog.test.mjs', 'LICENSE.pactlane']
+    source_paths += ['packages/extension/src/entries/Content/content.styles.css', 'packages/extension/src/entries/ConfirmPopup/index.html', 'packages/extension/src/entries/Options/index.html', 'packages/extension/src/assets/img/icon-128.png', 'packages/extension/src/assets/img/icon-34.png', 'packages/extension/webpack.config.js']
+    source_paths += ['pactlane/branding/' + name for name in ['pactlane.css', 'manrope.woff2', 'OFL.pactlane.txt', 'pactlane-mark.svg']]
     audit['sourceFiles'] = {name: digest((ROOT / name).read_bytes()) for name in source_paths}
     try:
         audit['sourceCommit'] = subprocess.check_output(
@@ -147,7 +170,7 @@ def prepare(archive, output):
     print(json.dumps({
         'output': str(output), 'extension': str(output / 'extension'),
         'package': str(output / PACKAGE), 'packageSha256': audit['packageSha256'],
-        'modifiedFiles': sorted(changed), 'unchangedFiles': len(files) - len(changed),
+        'modifiedFiles': sorted(changed), 'addedFiles': sorted(added), 'unchangedFiles': len(before) - len(changed),
         'installed': False, 'published': False,
     }))
 

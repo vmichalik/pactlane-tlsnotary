@@ -171,6 +171,7 @@ var options = {
       global: 'globalThis',
       __EXTENSION_VERSION__: JSON.stringify(require('./package.json').version),
     }),
+    new CopyWebpackPlugin({ patterns: [{ from: '../../pactlane/branding', to: path.join(__dirname, 'build') }] }),
     new CopyWebpackPlugin({
       patterns: [
         {

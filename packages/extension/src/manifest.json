@@ -15,9 +15,17 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*", "<all_urls>"],
-      "js": ["contentScript.bundle.js"],
-      "css": ["content.styles.css"]
+      "matches": [
+        "http://*/*",
+        "https://*/*",
+        "<all_urls>"
+      ],
+      "js": [
+        "contentScript.bundle.js"
+      ],
+      "css": [
+        "content.styles.css"
+      ]
     }
   ],
   "web_accessible_resources": [
@@ -29,10 +37,22 @@
         "content.bundle.js",
         "*.wasm"
       ],
-      "matches": ["http://*/*", "https://*/*", "<all_urls>"]
+      "matches": [
+        "http://*/*",
+        "https://*/*",
+        "<all_urls>"
+      ]
     }
   ],
-  "host_permissions": ["<all_urls>"],
-  "permissions": ["offscreen", "webRequest", "activeTab", "tabs", "windows"],
-  "version_name": "0.1.0.1501-pactlane.1"
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "permissions": [
+    "offscreen",
+    "webRequest",
+    "activeTab",
+    "tabs",
+    "windows"
+  ],
+  "version_name": "0.1.0.1501-pactlane.2"
 }

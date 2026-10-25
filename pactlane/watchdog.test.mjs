@@ -13,10 +13,12 @@ const ARCHIVE = process.env.PACTLANE_ARCHIVE
   : resolve(ROOT, 'downloads/extension-0.1.0.1501.zip');
 const OUTPUT = process.env.PACTLANE_OUTPUT
   ? resolve(process.env.PACTLANE_OUTPUT)
-  : resolve(ROOT, 'dist/0.1.0.1501-pactlane.1');
+  : resolve(ROOT, 'dist/0.1.0.1501-pactlane.2');
 const ORIGINAL_SHA256 = '1c312ad4305653b8d9351cf3eac46de4222a43be513260bf53053cfa1de45155';
 const WORKER = '399.bundle.js';
-const PACKAGE = 'pactlane-tlsnotary-0.1.0.1501-pactlane.1.zip';
+const PRESENTATION = ['content.styles.css', 'confirmPopup.html', 'options.html', 'icon-128.png', 'icon-34.png'];
+const ADDED = ['pactlane.css', 'manrope.woff2', 'OFL.pactlane.txt', 'pactlane-mark.svg'];
+const PACKAGE = 'pactlane-tlsnotary-0.1.0.1501-pactlane.2.zip';
 const originalPath = 'official';
 const patchedPath = 'patched';
 const codes = new Map();
@@ -54,7 +56,8 @@ async function preparedWorkers() {
   const audit = JSON.parse(await readFile(resolve(OUTPUT, 'audit.json'), 'utf8'));
   assert.equal(audit.originalSha256, ORIGINAL_SHA256);
   assert.equal(audit.setupTimeoutMs, 60000);
-  assert.deepEqual(audit.modifiedFiles.map((row) => row.path).sort(), [WORKER, 'manifest.json']);
+  assert.deepEqual(audit.modifiedFiles.map((row) => row.path).sort(), [WORKER, 'manifest.json', ...PRESENTATION].sort());
+  assert.deepEqual(audit.addedFiles.map(row => row.path).sort(), ADDED.slice().sort());
   assert.equal(audit.cryptographicRuntimeChanged, false);
   assert.equal(audit.permissionsChanged, false);
   const originalCode = metadata.worker;
@@ -73,7 +76,7 @@ async function preparedWorkers() {
   const manifest = JSON.parse(await readFile(resolve(extension, 'manifest.json'), 'utf8'));
   assert.equal(manifest.version, '0.1.0.1501');
   assert.equal(manifest.name, 'Pactlane TLSNotary');
-  assert.equal(manifest.version_name, '0.1.0.1501-pactlane.1');
+  assert.equal(manifest.version_name, '0.1.0.1501-pactlane.2');
   const restored = { ...manifest };
   delete restored.version_name;
   restored.name = metadata.manifest.name;
@@ -99,11 +102,11 @@ async function preparedWorkers() {
     .sort();
   assert.deepEqual(
     fileNames,
-    metadata.files.map((row) => row.name).sort(),
+    [...metadata.files.map((row) => row.name), ...ADDED].sort(),
     'Unexpected extension file set',
   );
   for (const file of metadata.files) {
-    if (![WORKER, 'manifest.json'].includes(file.name))
+    if (![WORKER, 'manifest.json', ...PRESENTATION].includes(file.name))
       assert.equal(
         hash(await readFile(resolve(extension, file.name))),
         file.sha256,

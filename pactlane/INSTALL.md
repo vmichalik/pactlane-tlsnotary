@@ -2,7 +2,18 @@
 
 This package gives TLSNotary proof setup up to 60 seconds. It is Pactlane's fork of TLSNotary 0.1.0.1501.
 
-## Install in Chrome
+## Update an existing Pactlane installation
+
+This update matches Pactlane’s website: typography, colours, icons, permission screens and disclosure overlays. It changes no proof code or permissions from Pactlane.1.
+
+1. Open `chrome://extensions` and find Pactlane TLSNotary. Note its existing extension-folder location.
+2. Close any active proof window. Unzip the new download.
+3. Copy the files **inside** the new `extension` folder into the existing installed extension folder, replacing the old files. Keep the existing folder path.
+4. Click **Reload** on Pactlane TLSNotary in `chrome://extensions`. Check the version label below and refresh any proof page already open.
+
+Keeping the folder path preserves the unpacked extension ID that the verifier allows. Do not use Load unpacked on a second folder for this update. No proof retry is needed just to inspect the new appearance.
+
+## First installation in Chrome
 
 1. Quit Chrome with Cmd+Q, then open it again.
 2. Unzip the download. Keep the `Pactlane TLSNotary` folder somewhere permanent, such as Documents. Chrome needs those files while the extension is installed.
@@ -11,7 +22,7 @@ This package gives TLSNotary proof setup up to 60 seconds. It is Pactlane's fork
 5. Click **Load unpacked**. Inside the `Pactlane TLSNotary` folder, choose the `extension` folder. It contains `manifest.json`.
 6. Check that **Pactlane TLSNotary** is enabled. Leave the original TLSNotary extension turned off while testing.
 
-The version label is `0.1.0.1501-pactlane.1`. The underlying API version remains `0.1.0.1501`.
+The version label is `0.1.0.1501-pactlane.2`. The underlying API version remains `0.1.0.1501`.
 
 ## Run the public check
 
@@ -23,7 +34,7 @@ This check uses the same 4 KiB sent / 16 KiB received limits as the transfer che
 
 Copy the final `Extension check:` line from the original tab. If it fails, stop rather than running another attempt. If it is still stuck after two minutes, keep only the displayed status message and quit Chrome. The timeout cleanup issue in the upstream runtime is still present.
 
-A public pass confirms that this connection worked. Payment proof remains unverified. Wait for the verifier result to be checked before testing an account transfer.
+A public pass confirms that this connection worked. It does not authorize payment release. An authenticated transfer proof also needs server-side payment and order checks.
 
 ## Return to the official extension
 
