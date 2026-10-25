@@ -213,8 +213,8 @@ async function createProver(config: ProverConfig): Promise<string> {
 /**
  * Sets up the prover with the verifier via WebSocket URL.
  */
-/** Default timeout for prover setup (30 seconds). */
-const SETUP_TIMEOUT_MS = 30_000;
+/** Pactlane allows up to 60 seconds for prover setup. */
+const SETUP_TIMEOUT_MS = 60_000;
 
 async function setupProver(proverId: string, verifierUrl: string): Promise<void> {
   const prover = provers.get(proverId);

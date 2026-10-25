@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "version": "0.1.0.1501",
-  "name": "TLSNotary",
-  "description": "A Chrome extension for TLSNotary",
+  "name": "Pactlane TLSNotary",
+  "description": "Create TLSNotary proofs for Pactlane testing.",
   "options_page": "options.html",
   "background": {
     "service_worker": "background.bundle.js"
@@ -33,5 +33,6 @@
     }
   ],
   "host_permissions": ["<all_urls>"],
-  "permissions": ["offscreen", "webRequest", "activeTab", "tabs", "windows"]
+  "permissions": ["offscreen", "webRequest", "activeTab", "tabs", "windows"],
+  "version_name": "0.1.0.1501-pactlane.1"
 }

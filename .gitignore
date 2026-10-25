@@ -18,3 +18,7 @@ servers/target/
 # Mobile native module build artifacts (symlinks created by postinstall)
 app/mobile/modules/quickjs-native/quickjs-native
 app/mobile/modules/tlsn-native/tlsn-native
+# Pactlane release inputs and generated packages
+/downloads/
+/dist/
+**/__pycache__/
