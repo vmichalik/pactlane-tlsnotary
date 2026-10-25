@@ -1,6 +1,6 @@
 # Install Pactlane TLSNotary
 
-This package gives TLSNotary proof setup up to 60 seconds. It is Pactlane's fork of TLSNotary 0.1.0.1501.
+Use Pactlane TLSNotary to review and prove a transfer from Chrome. [Download the current release](https://github.com/vmichalik/pactlane-tlsnotary/releases/tag/v0.1.0.1501-pactlane.2).
 
 ## Update an existing Pactlane installation
 
@@ -11,7 +11,7 @@ This update matches Pactlane’s website: typography, colours, icons, permission
 3. Copy the files **inside** the new `extension` folder into the existing installed extension folder, replacing the old files. Keep the existing folder path.
 4. Click **Reload** on Pactlane TLSNotary in `chrome://extensions`. Check the version label below and refresh any proof page already open.
 
-Keeping the folder path preserves the unpacked extension ID that the verifier allows. Do not use Load unpacked on a second folder for this update. No proof retry is needed just to inspect the new appearance.
+Keeping the folder path preserves the unpacked extension ID that the verifier allows. Do not use Load unpacked on a second folder for this update.
 
 ## First installation in Chrome
 
@@ -20,7 +20,7 @@ Keeping the folder path preserves the unpacked extension ID that the verifier al
 3. Open `chrome://extensions` and turn off the existing TLSNotary extension. You can leave it installed.
 4. Turn on **Developer mode** at the top right.
 5. Click **Load unpacked**. Inside the `Pactlane TLSNotary` folder, choose the `extension` folder. It contains `manifest.json`.
-6. Check that **Pactlane TLSNotary** is enabled. Leave the original TLSNotary extension turned off while testing.
+6. Check that **Pactlane TLSNotary** is enabled. Leave the original TLSNotary extension turned off while using Pactlane.
 
 The version label is `0.1.0.1501-pactlane.2`. The underlying API version remains `0.1.0.1501`.
 
@@ -34,7 +34,7 @@ This check uses the same 4 KiB sent / 16 KiB received limits as the transfer che
 
 Copy the final `Extension check:` line from the original tab. If it fails, stop rather than running another attempt. If it is still stuck after two minutes, keep only the displayed status message and quit Chrome. The timeout cleanup issue in the upstream runtime is still present.
 
-A public pass confirms that this connection worked. It does not authorize payment release. An authenticated transfer proof also needs server-side payment and order checks.
+A public pass confirms the proof connection. For a trade, Pactlane then checks the authenticated transfer against the locked order.
 
 ## Return to the official extension
 

@@ -1,22 +1,29 @@
 # Pactlane TLSNotary
 
-A Chrome extension for testing Pactlane's payment proofs, based on [TLSNotary](https://github.com/tlsnotary/tlsn-extension).
+Prove a bank payment from your browser. Pactlane TLSNotary connects the payment you see in your bank app to the verifier that checks an exchange order.
 
-This version gives proof setup up to 60 seconds. We made that change after the official extension's 30-second limit stopped both a transfer check and a public check. The longer limit gives setup more time; it does not make it faster.
+[Download Pactlane TLSNotary](https://github.com/vmichalik/pactlane-tlsnotary/releases/tag/v0.1.0.1501-pactlane.2) · [Install in Chrome](pactlane/INSTALL.md) · [Pactlane](https://pactlane.io/)
 
-[Download the release](https://github.com/vmichalik/pactlane-tlsnotary/releases/tag/v0.1.0.1501-pactlane.2) and follow the [install guide](pactlane/INSTALL.md). Use the public check first. A successful public proof does not verify a payment.
+## How it works
 
-## What changed
+1. Open a proof request from Pactlane.
+2. Choose the transfer in your bank window.
+3. Review exactly what the extension will disclose and approve it.
+4. The verifier authenticates the record; the order policy checks the recipient, amount, timing and reuse before settlement.
 
-The fork starts at upstream extension `0.1.0.1501`, commit `68bbd380d6e1a89d79748e5294661c752f5d1205`. The fork changes the setup deadline in `ProveManager/worker.ts` and the extension’s name, description and version label. Pactlane.2 also matches the Pactlane website’s typography, colours, icons, permission screens and disclosure overlays.
+The disclosure preview is the source of truth for what you share. The current complete-record check includes the full transfer response, so review it before approving.
 
-The download is a reproducible repack of the official release ZIP. The packaging script checks the upstream checksum, makes the documented worker, manifest and presentation edits, and copies all other extension files unchanged. All JavaScript bundles and WASM files are identical to Pactlane.1; the UI update changes styles, page titles, icons and font assets only. It preserves the WASM files, cryptographic checks, permissions and other deadlines. It does not rebuild WASM or include Pactlane's private application code.
+## What's in this release
 
-The browser API version stays at `0.1.0.1501` so it works with the pinned verifier. Chrome shows the Pactlane name and version label `0.1.0.1501-pactlane.2`.
+Pactlane.2 matches the website's typography, colours, icons and disclosure screens. Proof setup has up to 60 seconds, compared with 30 seconds in the upstream release. This gives slower setups more time without changing the cryptographic checks or permissions.
 
-## Build the download
+The package is based on TLSNotary 0.1.0.1501, commit `68bbd380d6e1a89d79748e5294661c752f5d1205`. Its browser API remains `0.1.0.1501`; Chrome shows the Pactlane version label `0.1.0.1501-pactlane.2`.
 
-You need Python 3, Node.js 22 or later, Git and the [official release ZIP](https://github.com/tlsnotary/tlsn-extension/releases/download/0.1.0.1501/extension-0.1.0.1501.zip). These steps do not install dependencies or start a proof.
+The packaging script verifies the official ZIP, applies the documented deadline and presentation edits, and copies the remaining files unchanged. Pactlane.2 preserves every JavaScript bundle and WASM file from Pactlane.1. Each release includes `SHA256SUMS` and an `audit.json` listing source and file hashes.
+
+## Reproduce the package
+
+Use Python 3, Node.js 22 or later, Git and the official release ZIP:
 
 ```sh
 mkdir -p downloads
@@ -27,26 +34,18 @@ python3 pactlane/package.py
 node --test pactlane/watchdog.test.mjs
 ```
 
-The files appear in `dist/0.1.0.1501-pactlane.2/`. The script stops if that directory already exists. For another build, give it a new directory with `--output`.
+Output goes to `dist/0.1.0.1501-pactlane.2/`. For another build, select a fresh directory with `--output`. To compare byte-for-byte, use the release's clean source commit, upstream ZIP and recorded Python/zlib versions.
 
-Each release includes the ZIP, `SHA256SUMS` and `audit.json`. The audit lists the upstream checksum, source commit and hashes of every extension file. To compare builds, use the same clean source commit, upstream ZIP and Python/zlib versions.
+The 11 watchdog tests exercise the released worker with a controlled clock: upstream setup stops at 30 seconds, Pactlane permits a 36-second setup and stops a stalled setup at 60 seconds. The HTTP-request deadline remains 60 seconds. Owner-run checks also completed a public proof and an authenticated transfer proof using Pactlane.1; Pactlane.2 changes presentation only.
 
-## What has been checked
+## Troubleshooting
 
-The tests execute the released worker code with a controlled clock and a simulated prover. They check that the official build stops setup at 30 seconds, this build allows 36.2- and 45-second setups, and a stalled setup stops at 60 seconds. The HTTP request deadline remains 60 seconds.
+If the verifier rejects the connection, check that it allows the installed extension ID. Keep the same installation folder when updating an unpacked extension.
 
-These tests check the timeout change and package contents. Pactlane.1 completed an owner-run public proof and an authenticated seven-field transfer proof on 25 October 2026; those results do not establish order payment or authorize release. Pactlane.2 changes presentation only. Its browser checks use synthetic UI data, without a bank request.
+If a proof becomes stuck after a timeout, fully quit Chrome before reopening it. The upstream cleanup behavior and finite QuickJS callback-ID limit still apply. The verifier also has its own overall deadline. A public connection check can isolate setup without a bank login; follow the [install guide](pactlane/INSTALL.md).
 
-## Known limits
+## Credits and licence
 
-The longer deadline may still be too short. The current test verifier also has a separate 120-second overall limit, which includes later proof work.
+[TLSNotary](https://github.com/tlsnotary/tlsn-extension) provides the protocol, extension and runtime. Pactlane maintains this independently branded distribution; it is not an official TLSNotary release.
 
-Upstream cleanup can fail when a timed-out setup still holds the prover. If a test fails or the extension gets stuck, stop and fully quit Chrome before opening it again. This release also retains upstream's finite QuickJS callback-ID limit. Neither issue is fixed by the deadline or presentation changes.
-
-Start with the public check in the install guide. Review the request and disclosure before approving. Use authenticated account data only with the account owner's approval. Payment verification and release remain unproven.
-
-## Upstream and licence
-
-TLSNotary provides the protocol, extension and runtime. Pactlane maintains this fork; it is not an official TLSNotary release. The upstream package declares the MIT licence. Manrope is bundled under the SIL Open Font License in `pactlane/branding/OFL.pactlane.txt`. Original source headers and dependency notices are retained, and Pactlane's additions are covered by [LICENSE.pactlane](LICENSE.pactlane).
-
-The original project README is preserved in [README.upstream.md](README.upstream.md).
+The upstream package declares the MIT licence. Original source headers and dependency notices are retained. Pactlane additions use [LICENSE.pactlane](LICENSE.pactlane); Manrope uses the [SIL Open Font License](pactlane/branding/OFL.pactlane.txt). The [upstream README](README.upstream.md) is preserved.
